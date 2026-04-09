@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Second Brain</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* LIGHT */
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --border: #E8E4DC;
+    --text: #1A1916;
+    --muted: #8C8880;
+    --radius: 14px;
+    --shadow: 0 4px 15px rgba(0,0,0,0.05);
+
+    --nsx-color: #2A5C45;
+    --nsx-light: #EAF3EE;
+    --jmt-color: #3A4F6B;
+    --jmt-light: #EBF0F7;
+    --accent: #2A5C45;
+    --accent-light: #EAF3EE;
+
+    --alta: #C0392B;      --alta-bg: #FDF0EF;
+    --media: #B7700D;     --media-bg: #FEF6E7;
+    --baja: #2A5C45;      --baja-bg: #EAF3EE;
+    --done-bg: #F2F1EF;
+    --check-color: var(--accent);
+
+    --income-ok: #27AE60;   --income-ok-bg: #EAF5EE;
+    --income-pend: #B7700D; --income-pend-bg: #FEF6E7;
+  }
+
+  /* DARK — pure grayscale */
+  html.dark {
+    --bg: #161616;
+    --surface: #202020;
+    --border: #303030;
+    --text: #D8D4CC;
+    --muted: #666460;
+    --shadow: 0 4px 20px rgba(0,0,0,0.4);
+
+    --nsx-color: #888480;  --nsx-light: #2A2A2A;
+    --jmt-color: #7A7672;  --jmt-light: #262626;
+    --accent: #909090;     --accent-light: #2A2A2A;
+
+    --alta: #C0776E;  --alta-bg: #2A1E1C;
+    --media: #B09060; --media-bg: #28221A;
+    --baja: #7A9A7A;  --baja-bg: #1C261C;
+    --done-bg: #1C1C1C;
+    --check-color: #888480;
+
+    --income-ok: #7A9A7A;      --income-ok-bg: #1C261C;
+    --income-pend: #B09060;    --income-pend-bg: #28221A;
+  }
+
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
+
+  .layout { display: grid; grid-template-columns: 270px 1fr; min-height: 100vh; }
+
+  /* ── SIDEBAR ─────────────────────────────── */
+  .sidebar {
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 2.5rem 1.75rem; display: flex; flex-direction: column;
+    gap: 2rem; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .brand-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .brand-title { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--text); line-height: 1.1; transition: color 0.3s; }
+  .brand-sub { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.05em; }
+  .brand-date { font-size: 12px; color: var(--muted); margin-top: 4px; text-transform: capitalize; }
+
+  .theme-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
+  .theme-toggle { width: 36px; height: 20px; border-radius: 99px; background: var(--border); border: none; cursor: pointer; position: relative; transition: background 0.3s; }
+  .theme-toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); transition: transform 0.3s, background 0.3s; }
+  html.dark .theme-toggle { background: #484440; }
+  html.dark .theme-toggle::after { transform: translateX(16px); background: var(--text); }
+  .theme-label { font-size: 9px; color: var(--muted); letter-spacing: 0.05em; }
+
+  /* NAV TABS */
+  .nav-tabs { display: flex; flex-direction: column; gap: 3px; }
+  .nav-tab {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 9px; border: none;
+    background: transparent; cursor: pointer; font-family: inherit;
+    font-size: 14px; color: var(--muted); width: 100%;
+    transition: 0.2s; text-align: left;
+  }
+  .nav-tab:hover { background: var(--bg); color: var(--text); }
+  .nav-tab.active { background: var(--accent-light); color: var(--text); font-weight: 600; }
+  .nav-tab-icon { font-size: 16px; }
+
+  .sidebar-divider { height: 1px; background: var(--border); }
+
+  /* STATS sidebar */
+  .stats-grid { display: flex; flex-direction: column; gap: 10px; }
+  .stat { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--bg); padding: 10px 14px; border-radius: 10px; transition: background 0.3s, border-color 0.3s; }
+  .stat-label { font-size: 13px; color: var(--muted); flex: 1; }
+  .stat-val { font-size: 20px; font-weight: 600; color: var(--text); }
+  .stat-val.accent { color: var(--accent); transition: color 0.3s; }
+
+  .progress-wrap { display: flex; flex-direction: column; gap: 5px; }
+  .progress-label { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s ease-out, background 0.3s; }
+
+  .filter-section { display: flex; flex-direction: column; gap: 4px; }
+  .filter-section-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 4px; }
+  .filter-btn { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 9px; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 14px; color: var(--muted); width: 100%; transition: 0.2s; text-align: left; }
+  .filter-btn:hover { background: var(--bg); color: var(--text); }
+  .filter-btn.active { background: var(--accent-light); color: var(--text); font-weight: 600; }
+  .filter-count { font-size: 11px; background: var(--border); color: var(--muted); border-radius: 99px; padding: 2px 8px; font-weight: 700; min-width: 24px; text-align: center; }
+
+  /* Income sidebar stats */
+  .income-summary { display: flex; flex-direction: column; gap: 10px; }
+  .income-card { background: var(--accent); color: white; padding: 1.25rem; border-radius: 12px; }
+  html.dark .income-card { background: #2A2A2A; color: var(--text); border: 1px solid var(--border); }
+  .income-card-label { font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .income-card-val { font-size: 22px; font-weight: 700; }
+  .income-stat { border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; background: var(--bg); transition: background 0.3s, border-color 0.3s; }
+  .income-stat span { font-size: 13px; color: var(--muted); }
+  .income-stat strong { font-size: 15px; color: var(--income-pend); }
+
+  .sync-status { font-size: 11px; color: var(--muted); text-align: center; margin-top: auto; padding-top: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--muted); }
+  .sync-dot.ok     { background: #7A9A7A; }
+  .sync-dot.error  { background: #C0776E; }
+  .sync-dot.syncing { background: var(--muted); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+  /* ── MAIN ────────────────────────────────── */
+  .main { padding: 2.5rem 3.5rem; display: flex; flex-direction: column; }
+
+  .view { display: none; flex-direction: column; }
+  .view.active { display: flex; }
+
+  /* ENV TABS */
+  .env-selector { display: flex; gap: 10px; margin-bottom: 2rem; }
+  .env-tab { flex: 1; padding: 13px 16px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--surface); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted); transition: 0.25s; text-align: center; }
+  .env-tab:hover { border-color: var(--muted); color: var(--text); }
+  .env-tab.active.nsx { background: var(--nsx-color); color: #161616; border-color: var(--nsx-color); }
+  .env-tab.active.jmt { background: var(--jmt-color); color: #161616; border-color: var(--jmt-color); }
+
+  /* ADD BOX */
+  .add-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); margin-bottom: 2rem; transition: background 0.3s, border-color 0.3s; }
+  .add-row { display: flex; gap: 10px; }
+  .add-input { flex: 1; border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; background: var(--bg); outline: none; font-family: inherit; font-size: 14px; color: var(--text); transition: border-color 0.2s, background 0.3s, color 0.3s; }
+  .add-input:focus { border-color: var(--accent); }
+  .add-input::placeholder { color: var(--muted); }
+  .priority-sel, .status-sel { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; background: var(--surface); color: var(--text); font-size: 13px; cursor: pointer; outline: none; font-family: inherit; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+  .add-btn { background: var(--accent); color: #F7F5F0; border: none; padding: 11px 22px; border-radius: 10px; cursor: pointer; font-weight: 600; font-family: inherit; font-size: 14px; transition: opacity 0.2s, background 0.3s; white-space: nowrap; }
+  html.dark .add-btn { color: #161616; }
+  .add-btn:hover { opacity: 0.85; }
+
+  /* TASKS */
+  .group-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 22px 0 8px 4px; font-weight: 700; }
+  .task-item { display: flex; align-items: center; gap: 14px; padding: 13px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 11px; margin-bottom: 7px; transition: box-shadow 0.2s, opacity 0.2s, background 0.3s, border-color 0.3s; }
+  .task-item:hover { box-shadow: var(--shadow); }
+  .task-item.done { opacity: 0.4; background: var(--done-bg); }
+  .check-btn { width: 21px; height: 21px; border-radius: 50%; border: 2px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, border-color 0.2s; }
+  .check-btn.checked { background: var(--check-color); border-color: var(--check-color); }
+  .task-name { flex: 1; font-size: 14px; line-height: 1.4; color: var(--text); cursor: text; }
+  .task-item.done .task-name { text-decoration: line-through; color: var(--muted); }
+  .task-name-input { flex: 1; font-size: 14px; line-height: 1.4; color: var(--text); background: var(--bg); border: 1px solid var(--accent); border-radius: 7px; padding: 3px 8px; font-family: inherit; outline: none; }
+  .inline-priority { border: none; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; outline: none; }
+  .inline-priority.p-alta  { color: var(--alta);  background: var(--alta-bg); }
+  .inline-priority.p-media { color: var(--media); background: var(--media-bg); }
+  .inline-priority.p-baja  { color: var(--baja);  background: var(--baja-bg); }
+  .del-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; opacity: 0; transition: opacity 0.15s; padding: 0 4px; line-height: 1; flex-shrink: 0; }
+  .task-item:hover .del-btn { opacity: 0.5; }
+  .del-btn:hover { opacity: 1 !important; color: var(--alta); }
+
+  /* INCOME */
+  .income-view-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .income-view-tab { padding: 8px 18px; border-radius: 9px; border: 1px solid var(--border); background: transparent; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted); transition: 0.2s; }
+  .income-view-tab:hover { color: var(--text); background: var(--bg); }
+  .income-view-tab.active { background: var(--accent-light); color: var(--text); border-color: transparent; }
+
+  .income-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .income-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .month-group-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 20px 0 8px 4px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .month-group-total { font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: 0; text-transform: none; }
+
+  .income-item { background: var(--surface); border: 1px solid var(--border); padding: 14px 18px; border-radius: 12px; display: grid; grid-template-columns: 110px 1.5fr 1fr 110px 36px; align-items: center; gap: 14px; transition: box-shadow 0.2s, background 0.3s, border-color 0.3s; }
+  .income-item:hover { box-shadow: var(--shadow); }
+  .income-item.editing { border-color: var(--accent); background: var(--bg); }
+  .col-date { font-size: 12px; color: var(--muted); cursor: pointer; }
+  .col-client { font-weight: 600; font-size: 14px; }
+  .col-concept { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .col-amount { font-weight: 700; text-align: right; color: var(--accent); font-size: 15px; cursor: pointer; }
+  .status-pill { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-align: center; text-transform: uppercase; display: inline-block; cursor: pointer; }
+  .status-cancelado { background: var(--income-ok-bg); color: var(--income-ok); }
+  .status-pendiente { background: var(--income-pend-bg); color: var(--income-pend); }
+  .income-del { background: none; border: none; color: var(--border); cursor: pointer; font-size: 18px; transition: color 0.2s; opacity: 0; }
+  .income-item:hover .income-del { opacity: 0.5; color: var(--muted); }
+  .income-del:hover { opacity: 1 !important; color: var(--alta) !important; }
+  .income-edit-input { font-size: 13px; color: var(--text); background: var(--surface); border: 1px solid var(--accent); border-radius: 7px; padding: 3px 7px; font-family: inherit; outline: none; width: 100%; }
+  .income-edit-input.amount { font-weight: 700; text-align: right; color: var(--accent); }
+
+  /* MONTHLY OVERVIEW */
+  .monthly-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .month-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; transition: box-shadow 0.2s, background 0.3s, border-color 0.3s; }
+  .month-card:hover { box-shadow: var(--shadow); }
+  .month-card-name { font-size: 13px; font-weight: 600; color: var(--text); text-transform: capitalize; margin-bottom: 10px; }
+  .month-card-total { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .month-card-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .month-card-row span:last-child { font-weight: 600; }
+  .month-card-row .ok { color: var(--income-ok); }
+  .month-card-row .pend { color: var(--income-pend); }
+  .month-card-bar { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+  .month-card-bar-fill { height: 100%; background: var(--accent); transition: width 0.4s ease-out; }
+  .month-card.empty { opacity: 0.4; }
+
+  .empty-state { text-align: center; padding: 3rem 0; color: var(--muted); font-size: 14px; }
+  .empty-state span { display: block; font-size: 36px; margin-bottom: 10px; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .main { padding: 1.25rem; }
+    .income-item { grid-template-columns: 1fr 1fr; }
+    .col-amount { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-row">
+        <div>
+          <div class="brand-title">Second Brain</div>
+          <div class="brand-sub">Workspace</div>
+          <div id="fecha" class="brand-date"></div>
+        </div>
+        <div class="theme-wrap">
+          <button class="theme-toggle" onclick="toggleTheme()"></button>
+          <span class="theme-label" id="theme-label">Claro</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="nav-tasks" onclick="setView('tasks')">
+        <span class="nav-tab-icon">✓</span> Tareas
+      </button>
+      <button class="nav-tab" id="nav-income" onclick="setView('income')">
+        <span class="nav-tab-icon">$</span> Ingresos
+      </button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- SIDEBAR: Tasks stats -->
+    <div id="sb-tasks">
+      <div class="stats-grid">
+        <div class="stat"><span class="stat-label">Total</span><span id="s-total" class="stat-val">0</span></div>
+        <div class="stat"><span class="stat-label">Completadas</span><span id="s-done" class="stat-val accent">0</span></div>
+      </div>
+      <div class="progress-wrap" style="margin-top:1.25rem;">
+        <div class="progress-label"><span>Progreso</span><span id="s-pct">0%</span></div>
+        <div class="progress-bar"><div id="s-bar" class="progress-fill"></div></div>
+      </div>
+      <div class="filter-section" style="margin-top:1.5rem;">
+        <div class="filter-section-label">Filtrar</div>
+        <button id="f-todas" class="filter-btn active" onclick="setFilter('todas')">Todas <span id="fc-todas" class="filter-count">0</span></button>
+        <button id="f-pendientes" class="filter-btn" onclick="setFilter('pendientes')">Pendientes <span id="fc-pend" class="filter-count">0</span></button>
+        <button id="f-completadas" class="filter-btn" onclick="setFilter('completadas')">Completadas <span id="fc-comp" class="filter-count">0</span></button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR: Income stats -->
+    <div id="sb-income" style="display:none;">
+      <div class="income-summary">
+        <div class="income-card">
+          <div class="income-card-label">Total Cobrado</div>
+          <div class="income-card-val" id="total-cobrado">S/ 0.00</div>
+        </div>
+        <div class="income-stat">
+          <span>Por cobrar</span>
+          <strong id="total-pendiente">S/ 0.00</strong>
+        </div>
+        <div class="income-stat">
+          <span>Registros</span>
+          <strong id="total-entries" style="color:var(--text)">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="sync-status">
+      <div id="sync-dot" class="sync-dot syncing"></div>
+      <span id="sync-text">Conectando...</span>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- VIEW: TASKS -->
+    <div class="view active" id="view-tasks">
+      <div class="env-selector">
+        <button class="env-tab active nsx" id="tab-nsx" onclick="setEnv('nsx')">🎨 NSX Studio</button>
+        <button class="env-tab jmt" id="tab-jmt" onclick="setEnv('jmt')">🏢 JMT Outdoors</button>
+      </div>
+      <div class="add-box">
+        <div class="add-row">
+          <input type="text" id="task-input" class="add-input" placeholder="Nueva tarea..." />
+          <select id="priority-sel" class="priority-sel">
+            <option value="alta">🔴 Alta</option>
+            <option value="media" selected>🟡 Media</option>
+            <option value="baja">🟢 Baja</option>
+          </select>
+          <button class="add-btn" onclick="addTask()">+ Agregar</button>
+        </div>
+      </div>
+      <div id="tasks-container"></div>
+    </div>
+
+    <!-- VIEW: INCOME -->
+    <div class="view" id="view-income">
+      <div class="income-view-tabs">
+        <button class="income-view-tab active" id="itab-list" onclick="setIncomeView('list')">Registros</button>
+        <button class="income-view-tab" id="itab-monthly" onclick="setIncomeView('monthly')">Vista mensual</button>
+      </div>
+
+      <!-- Sub-view: list -->
+      <div id="iview-list">
+        <div class="add-box">
+          <div class="income-form-grid">
+            <input type="text" id="in-client" class="add-input" placeholder="Cliente" />
+            <input type="text" id="in-concept" class="add-input" placeholder="Concepto" />
+            <input type="number" id="in-amount" class="add-input" placeholder="Monto S/" />
+            <select id="in-status" class="status-sel">
+              <option value="Cancelado">✅ Cobrado</option>
+              <option value="Pendiente">⏳ Pendiente</option>
+            </select>
+            <input type="date" id="in-date" class="add-input" />
+          </div>
+          <button class="add-btn" style="width:100%;" onclick="addEntry()">+ Registrar Ingreso</button>
+        </div>
+        <div class="income-list" id="income-container"></div>
+      </div>
+
+      <!-- Sub-view: monthly overview -->
+      <div id="iview-monthly" style="display:none;">
+        <div class="monthly-grid" id="monthly-container"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ── CONFIG ───────────────────────────────────
+  const BIN_ID     = "69cc4148aaba882197b15667";
+  const MASTER_KEY = "$2a$10$0Fx8xg5R7hQjqY6RgppeseemASXxoLx7RdtWFqJhiPB1Dhv9HnvSm";
+  const BIN_URL    = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+  const TASKS_KEY  = "agenda_pro_v4";
+  const INCOME_KEY = "income_tracker_v2";
+
+  // ── ESTADO ───────────────────────────────────
+  let tasks        = [];
+  let entries      = [];
+  let currentEnv   = localStorage.getItem('agenda_env') || 'nsx';
+  let activeFilter = 'todas';
+  let currentView  = 'tasks';
+  let currentIncomeView = 'list';
+  let saving       = false;
+
+  // ── TEMA ─────────────────────────────────────
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle('dark', dark);
+    document.getElementById('theme-label').textContent = dark ? 'Oscuro' : 'Claro';
+    localStorage.setItem('sb_theme', dark ? 'dark' : 'light');
+  }
+  function toggleTheme() { applyTheme(!document.documentElement.classList.contains('dark')); }
+  const savedTheme = localStorage.getItem('sb_theme');
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) applyTheme(true);
+
+  // ── SYNC ─────────────────────────────────────
+  function setSyncStatus(state, text) {
+    document.getElementById('sync-dot').className = 'sync-dot ' + state;
+    document.getElementById('sync-text').textContent = text;
+  }
+
+  async function loadFromCloud() {
+    setSyncStatus('syncing', 'Cargando...');
+    try {
+      const resp = await fetch(BIN_URL + "/latest", { headers: { "X-Master-Key": MASTER_KEY } });
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const data = await resp.json();
+      const rec = data.record;
+      tasks   = rec.tasks   || [];
+      entries = rec.entries || [];
+      localStorage.setItem(TASKS_KEY,  JSON.stringify(tasks));
+      localStorage.setItem(INCOME_KEY, JSON.stringify(entries));
+      setSyncStatus('ok', 'Sincronizado ✓');
+    } catch(e) {
+      tasks   = JSON.parse(localStorage.getItem(TASKS_KEY)  || '[]');
+      entries = JSON.parse(localStorage.getItem(INCOME_KEY) || '[]');
+      setSyncStatus('error', 'Sin conexión — local');
+    }
+    renderTasks();
+    renderIncome();
+  }
+
+  async function saveToCloud() {
+    if (saving) return;
+    saving = true;
+    localStorage.setItem(TASKS_KEY,  JSON.stringify(tasks));
+    localStorage.setItem(INCOME_KEY, JSON.stringify(entries));
+    setSyncStatus('syncing', 'Guardando...');
+    try {
+      const resp = await fetch(BIN_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-Master-Key": MASTER_KEY },
+        body: JSON.stringify({ tasks, entries })
+      });
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      setSyncStatus('ok', 'Guardado ✓');
+    } catch(e) {
+      setSyncStatus('error', 'Error al guardar');
+    }
+    saving = false;
+  }
+
+  // ── VISTA principal ──────────────────────────
+  function setView(view) {
+    currentView = view;
+    document.getElementById('view-tasks').classList.toggle('active', view === 'tasks');
+    document.getElementById('view-income').classList.toggle('active', view === 'income');
+    document.getElementById('nav-tasks').classList.toggle('active', view === 'tasks');
+    document.getElementById('nav-income').classList.toggle('active', view === 'income');
+    document.getElementById('sb-tasks').style.display  = view === 'tasks'  ? '' : 'none';
+    document.getElementById('sb-income').style.display = view === 'income' ? '' : 'none';
+  }
+
+  // ── VISTA ingresos (list / monthly) ──────────
+  function setIncomeView(v) {
+    currentIncomeView = v;
+    document.getElementById('itab-list').classList.toggle('active', v === 'list');
+    document.getElementById('itab-monthly').classList.toggle('active', v === 'monthly');
+    document.getElementById('iview-list').style.display    = v === 'list'    ? '' : 'none';
+    document.getElementById('iview-monthly').style.display = v === 'monthly' ? '' : 'none';
+    if (v === 'monthly') renderMonthly();
+  }
+
+  // ── ENTORNO ──────────────────────────────────
+  function setEnv(env) {
+    currentEnv = env;
+    localStorage.setItem('agenda_env', env);
+    activeFilter = 'todas';
+    document.getElementById('tab-nsx').className = 'env-tab nsx' + (env === 'nsx' ? ' active' : '');
+    document.getElementById('tab-jmt').className = 'env-tab jmt' + (env === 'jmt' ? ' active' : '');
+    const isNsx = env === 'nsx';
+    document.documentElement.style.setProperty('--accent',       isNsx ? 'var(--nsx-color)' : 'var(--jmt-color)');
+    document.documentElement.style.setProperty('--accent-light', isNsx ? 'var(--nsx-light)' : 'var(--jmt-light)');
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('f-todas').classList.add('active');
+    renderTasks();
+  }
+
+  // ── TASKS CRUD ───────────────────────────────
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const name  = input.value.trim();
+    if (!name) return;
+    tasks.push({ id: Date.now() + Math.floor(Math.random()*1000), name, priority: document.getElementById('priority-sel').value, done: false, env: currentEnv, created: new Date().toISOString() });
+    input.value = '';
+    renderTasks();
+    saveToCloud();
+  }
+
+  function toggle(id) {
+    const t = tasks.find(t => t.id == id);
+    if (t) { t.done = !t.done; renderTasks(); saveToCloud(); }
+  }
+
+  function delTask(id) {
+    if (!confirm('¿Eliminar tarea?')) return;
+    tasks = tasks.filter(t => t.id != id);
+    renderTasks(); saveToCloud();
+  }
+
+  function updatePriority(id, val) {
+    const t = tasks.find(t => t.id == id);
+    if (t) { t.priority = val; saveToCloud(); }
+  }
+
+  // Inline edit task name — double click
+  function startEditTask(id, spanEl) {
+    const t = tasks.find(t => t.id == id);
+    if (!t || t.done) return;
+    const input = document.createElement('input');
+    input.className = 'task-name-input';
+    input.value = t.name;
+    spanEl.replaceWith(input);
+    input.focus();
+    input.select();
+    function commit() {
+      const val = input.value.trim();
+      if (val && val !== t.name) { t.name = val; saveToCloud(); }
+      renderTasks();
+    }
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { input.blur(); }
+      if (e.key === 'Escape') { input.removeEventListener('blur', commit); renderTasks(); }
+    });
+  }
+
+  function setFilter(f) {
+    activeFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('f-' + f).classList.add('active');
+    renderTasks();
+  }
+
+  // ── INCOME CRUD ──────────────────────────────
+  function addEntry() {
+    const client = document.getElementById('in-client').value.trim();
+    const amount = document.getElementById('in-amount').value;
+    if (!client || !amount) return;
+    entries.push({
+      id:       Date.now() + Math.floor(Math.random()*1000),
+      fecha:    document.getElementById('in-date').value || new Date().toISOString().split('T')[0],
+      cliente:  client,
+      concepto: document.getElementById('in-concept').value || 'Servicio',
+      monto:    parseFloat(amount),
+      status:   document.getElementById('in-status').value
+    });
+    document.getElementById('in-client').value  = '';
+    document.getElementById('in-concept').value = '';
+    document.getElementById('in-amount').value  = '';
+    renderIncome(); saveToCloud();
+  }
+
+  function deleteEntry(id) {
+    if (!confirm('¿Eliminar registro?')) return;
+    entries = entries.filter(e => e.id !== id);
+    renderIncome(); saveToCloud();
+  }
+
+  // Inline edit income field
+  function editIncomeField(id, field, currentEl, isNumber) {
+    const e = entries.find(e => e.id === id);
+    if (!e) return;
+    const input = document.createElement(field === 'status' ? 'select' : (field === 'fecha' ? 'input' : 'input'));
+    input.className = 'income-edit-input' + (field === 'monto' ? ' amount' : '');
+
+    if (field === 'status') {
+      ['Cancelado','Pendiente'].forEach(v => {
+        const o = document.createElement('option');
+        o.value = v; o.textContent = v === 'Cancelado' ? '✅ Cobrado' : '⏳ Pendiente';
+        if (e.status === v) o.selected = true;
+        input.appendChild(o);
+      });
+    } else if (field === 'fecha') {
+      input.type = 'date';
+      input.value = e.fecha;
+    } else if (field === 'monto') {
+      input.type = 'number';
+      input.value = e.monto;
+      input.style.textAlign = 'right';
+    } else {
+      input.type = 'text';
+      input.value = e[field];
+    }
+
+    currentEl.replaceWith(input);
+    input.focus();
+    if (input.tagName !== 'SELECT') input.select();
+
+    function commit() {
+      let val = input.value.trim();
+      if (!val) { renderIncome(); return; }
+      if (field === 'monto') { val = parseFloat(val); if (isNaN(val)) { renderIncome(); return; } }
+      e[field] = val;
+      renderIncome();
+      saveToCloud();
+    }
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') input.blur();
+      if (ev.key === 'Escape') { input.removeEventListener('blur', commit); renderIncome(); }
+    });
+    if (field === 'status') input.addEventListener('change', () => input.blur());
+  }
+
+  // ── RENDER helpers ───────────────────────────
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  // ── RENDER TASKS ─────────────────────────────
+  function renderTasks() {
+    const envTasks = tasks.filter(t => t.env === currentEnv);
+    const total = envTasks.length;
+    const done  = envTasks.filter(t => t.done).length;
+    const pct   = total ? Math.round((done/total)*100) : 0;
+
+    document.getElementById('s-total').textContent  = total;
+    document.getElementById('s-done').textContent   = done;
+    document.getElementById('s-pct').textContent    = pct + '%';
+    document.getElementById('s-bar').style.width    = pct + '%';
+    document.getElementById('fc-todas').textContent = total;
+    document.getElementById('fc-pend').textContent  = total - done;
+    document.getElementById('fc-comp').textContent  = done;
+
+    let filtered = envTasks;
+    if (activeFilter === 'pendientes')  filtered = envTasks.filter(t => !t.done);
+    if (activeFilter === 'completadas') filtered = envTasks.filter(t => t.done);
+
+    const container = document.getElementById('tasks-container');
+    container.innerHTML = '';
+
+    if (!filtered.length) {
+      const msg = activeFilter === 'completadas' ? 'Sin tareas completadas' : activeFilter === 'pendientes' ? '¡Todo al día! 🎉' : 'Sin tareas aún';
+      container.innerHTML = `<div class="empty-state"><span>📋</span>${msg}</div>`;
+      return;
+    }
+
+    ['alta','media','baja'].forEach(p => {
+      const group = filtered.filter(t => t.priority === p);
+      if (!group.length) return;
+      const label = document.createElement('div');
+      label.className = 'group-label';
+      label.textContent = ({alta:'— Alta prioridad', media:'— Media prioridad', baja:'— Baja prioridad'})[p];
+      container.appendChild(label);
+      group.forEach(t => {
+        const item = document.createElement('div');
+        item.className = `task-item${t.done ? ' done' : ''}`;
+        item.innerHTML = `
+          <button class="check-btn${t.done?' checked':''}" onclick="toggle(${t.id})">
+            ${t.done?`<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+          </button>
+          <span class="task-name" title="Doble clic para editar">${esc(t.name)}</span>
+          <select class="inline-priority p-${t.priority}" onchange="updatePriority(${t.id},this.value)">
+            <option value="alta"  ${t.priority==='alta' ?'selected':''}>Alta</option>
+            <option value="media" ${t.priority==='media'?'selected':''}>Media</option>
+            <option value="baja"  ${t.priority==='baja' ?'selected':''}>Baja</option>
+          </select>
+          <button class="del-btn" onclick="delTask(${t.id})">&times;</button>
+        `;
+        // Double-click to edit name
+        item.querySelector('.task-name').addEventListener('dblclick', function() {
+          startEditTask(t.id, this);
+        });
+        container.appendChild(item);
+      });
+    });
+  }
+
+  // ── RENDER INCOME (list, grouped by month) ───
+  function renderIncome() {
+    const container = document.getElementById('income-container');
+    container.innerHTML = '';
+    let totalC = 0, totalP = 0;
+
+    const sorted = [...entries].sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+    if (!sorted.length) {
+      container.innerHTML = `<div class="empty-state"><span>💰</span>Sin registros aún</div>`;
+    } else {
+      // Group by year-month
+      const groups = {};
+      sorted.forEach(e => {
+        const key = e.fecha ? e.fecha.substring(0,7) : 'sin-fecha';
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(e);
+      });
+
+      Object.keys(groups).sort((a,b) => b.localeCompare(a)).forEach(key => {
+        const group = groups[key];
+        const groupTotal = group.reduce((s,e) => s + e.monto, 0);
+
+        // Month label
+        let labelText = key;
+        if (key !== 'sin-fecha') {
+          const [y, m] = key.split('-');
+          labelText = `${MESES[parseInt(m)-1]} ${y}`;
+        }
+        const glEl = document.createElement('div');
+        glEl.className = 'month-group-label';
+        glEl.innerHTML = `<span>${labelText}</span><span class="month-group-total">S/ ${groupTotal.toLocaleString('es-PE',{minimumFractionDigits:2})}</span>`;
+        container.appendChild(glEl);
+
+        group.forEach(e => {
+          if (e.status === 'Cancelado') totalC += e.monto;
+          else totalP += e.monto;
+          const item = document.createElement('div');
+          item.className = 'income-item';
+          item.innerHTML = `
+            <div class="col-date" title="Clic para editar">${e.fecha}</div>
+            <div>
+              <div class="col-client" title="Doble clic para editar">${esc(e.cliente)}</div>
+              <div class="col-concept" title="Doble clic para editar">${esc(e.concepto)}</div>
+            </div>
+            <div><span class="status-pill status-${e.status.toLowerCase()}" title="Clic para cambiar">${e.status === 'Cancelado' ? 'Cobrado' : 'Pendiente'}</span></div>
+            <div class="col-amount" title="Doble clic para editar">S/ ${e.monto.toLocaleString('es-PE',{minimumFractionDigits:2})}</div>
+            <button class="income-del" onclick="deleteEntry(${e.id})">&times;</button>
+          `;
+          // Bind inline edits
+          item.querySelector('.col-date').addEventListener('dblclick', function() { editIncomeField(e.id,'fecha',this); });
+          item.querySelector('.col-client').addEventListener('dblclick', function() { editIncomeField(e.id,'cliente',this); });
+          item.querySelector('.col-concept').addEventListener('dblclick', function() { editIncomeField(e.id,'concepto',this); });
+          item.querySelector('.status-pill').addEventListener('click', function() { editIncomeField(e.id,'status',this); });
+          item.querySelector('.col-amount').addEventListener('dblclick', function() { editIncomeField(e.id,'monto',this); });
+          container.appendChild(item);
+        });
+      });
+    }
+
+    document.getElementById('total-cobrado').textContent   = `S/ ${totalC.toLocaleString('es-PE',{minimumFractionDigits:2})}`;
+    document.getElementById('total-pendiente').textContent = `S/ ${totalP.toLocaleString('es-PE',{minimumFractionDigits:2})}`;
+    document.getElementById('total-entries').textContent   = entries.length;
+
+    if (currentIncomeView === 'monthly') renderMonthly();
+  }
+
+  // ── RENDER MONTHLY OVERVIEW ──────────────────
+  function renderMonthly() {
+    const container = document.getElementById('monthly-container');
+    container.innerHTML = '';
+
+    const year = new Date().getFullYear();
+    // Build map
+    const map = {};
+    entries.forEach(e => {
+      if (!e.fecha) return;
+      const [y, m] = e.fecha.split('-');
+      if (parseInt(y) !== year) return;
+      const key = m;
+      if (!map[key]) map[key] = { cobrado: 0, pendiente: 0 };
+      if (e.status === 'Cancelado') map[key].cobrado += e.monto;
+      else map[key].pendiente += e.monto;
+    });
+
+    const allTotals = Object.values(map).map(v => v.cobrado + v.pendiente);
+    const maxTotal = allTotals.length ? Math.max(...allTotals) : 1;
+
+    for (let i = 1; i <= 12; i++) {
+      const key = String(i).padStart(2,'0');
+      const data = map[key] || { cobrado: 0, pendiente: 0 };
+      const total = data.cobrado + data.pendiente;
+      const pct = maxTotal > 0 ? Math.round((total / maxTotal) * 100) : 0;
+      const isEmpty = total === 0;
+
+      const card = document.createElement('div');
+      card.className = 'month-card' + (isEmpty ? ' empty' : '');
+      card.innerHTML = `
+        <div class="month-card-name">${MESES[i-1]} ${year}</div>
+        <div class="month-card-total">S/ ${total.toLocaleString('es-PE',{minimumFractionDigits:2})}</div>
+        <div class="month-card-row"><span>Cobrado</span><span class="ok">S/ ${data.cobrado.toLocaleString('es-PE',{minimumFractionDigits:2})}</span></div>
+        <div class="month-card-row"><span>Pendiente</span><span class="pend">S/ ${data.pendiente.toLocaleString('es-PE',{minimumFractionDigits:2})}</span></div>
+        <div class="month-card-bar"><div class="month-card-bar-fill" style="width:${pct}%"></div></div>
+      `;
+      container.appendChild(card);
+    }
+  }
+
+  // ── INIT ─────────────────────────────────────
+  document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('task-input').addEventListener('keydown', e => { if (e.key==='Enter') addTask(); });
+  document.getElementById('in-date').valueAsDate = new Date();
+
+  setEnv(currentEnv);
+  loadFromCloud();
+</script>
+
+</body>
+</html>
