@@ -33,6 +33,11 @@
 
     --income-ok: #27AE60;   --income-ok-bg: #EAF5EE;
     --income-pend: #B7700D; --income-pend-bg: #FEF6E7;
+
+    --cycles-color: #6B3FA0;  --cycles-light: #F2ECF9;
+    --cycles-stock: #2A5C45;  --cycles-stock-bg: #EAF3EE;
+    --cycles-sold:  #B7700D;  --cycles-sold-bg: #FEF6E7;
+    --cycles-transit: #3A4F6B; --cycles-transit-bg: #EBF0F7;
   }
 
   /* DARK — pure grayscale */
@@ -56,6 +61,11 @@
 
     --income-ok: #7A9A7A;      --income-ok-bg: #1C261C;
     --income-pend: #B09060;    --income-pend-bg: #28221A;
+
+    --cycles-color: #9B72C8;  --cycles-light: #221A2E;
+    --cycles-stock: #7A9A7A;  --cycles-stock-bg: #1C261C;
+    --cycles-sold:  #B09060;  --cycles-sold-bg: #28221A;
+    --cycles-transit: #7A7672; --cycles-transit-bg: #262626;
   }
 
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
@@ -220,6 +230,64 @@
   .empty-state { text-align: center; padding: 3rem 0; color: var(--muted); font-size: 14px; }
   .empty-state span { display: block; font-size: 36px; margin-bottom: 10px; }
 
+  /* ── CYCLES ─────────────────────────────── */
+  .cycles-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 12px; }
+  .cycles-tc-row { display: flex; align-items: center; gap: 8px; }
+  .cycles-tc-label { font-size: 12px; color: var(--muted); }
+  .cycles-tc-input { width: 90px; border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; background: var(--bg); color: var(--text); font-size: 13px; font-family: inherit; outline: none; text-align: center; transition: border-color 0.2s; }
+  .cycles-tc-input:focus { border-color: var(--cycles-color); }
+
+  .cycles-form-grid { display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .cycles-form-row2 { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+
+  .cycles-table-wrap { overflow-x: auto; }
+  .cycles-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .cycles-table th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; padding: 0 12px 10px; white-space: nowrap; }
+  .cycles-table th.right { text-align: right; }
+  .cycles-table td { padding: 11px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
+  .cycles-table tr:hover td { background: var(--bg); }
+  .cycles-table .td-model { font-weight: 600; font-size: 13px; min-width: 180px; }
+  .cycles-table .td-usd { color: var(--muted); font-size: 12px; text-align: right; white-space: nowrap; }
+  .cycles-table .td-soles { font-weight: 700; text-align: right; color: var(--text); white-space: nowrap; }
+  .cycles-table .td-profit { font-weight: 700; text-align: right; color: var(--cycles-stock); white-space: nowrap; }
+  .cycles-table .td-profit.neg { color: var(--alta); }
+  .cycles-table .td-actions { text-align: right; white-space: nowrap; }
+
+  .cycle-status { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; display: inline-block; cursor: pointer; white-space: nowrap; }
+  .cycle-status.stock    { background: var(--cycles-stock-bg);   color: var(--cycles-stock); }
+  .cycle-status.vendido  { background: var(--cycles-sold-bg);    color: var(--cycles-sold); }
+  .cycle-status.transito { background: var(--cycles-transit-bg); color: var(--cycles-transit); }
+
+  .cycles-del { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 17px; opacity: 0; transition: opacity 0.15s; padding: 0 4px; }
+  .cycles-table tr:hover .cycles-del { opacity: 0.5; }
+  .cycles-del:hover { opacity: 1 !important; color: var(--alta); }
+
+  .cycles-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 1.75rem; }
+  .cycles-summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; transition: background 0.3s, border-color 0.3s; }
+  .cycles-summary-card.highlight { background: var(--cycles-color); border-color: var(--cycles-color); }
+  html.dark .cycles-summary-card.highlight { background: #2A2A2A; border-color: var(--border); }
+  .cycles-summary-card .cs-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .cycles-summary-card.highlight .cs-label { color: rgba(255,255,255,0.75); }
+  html.dark .cycles-summary-card.highlight .cs-label { color: var(--muted); }
+  .cycles-summary-card .cs-val { font-size: 20px; font-weight: 700; color: var(--text); }
+  .cycles-summary-card.highlight .cs-val { color: #fff; }
+  html.dark .cycles-summary-card.highlight .cs-val { color: var(--text); }
+
+  .cycles-inline-input { font-size: 12px; color: var(--text); background: var(--surface); border: 1px solid var(--cycles-color); border-radius: 6px; padding: 3px 6px; font-family: inherit; outline: none; width: 100%; min-width: 60px; }
+
+  /* SIDEBAR Cycles */
+  .cycles-sb { display: flex; flex-direction: column; gap: 10px; }
+  .cycles-sb-card { background: var(--cycles-color); color: white; padding: 1.25rem; border-radius: 12px; }
+  html.dark .cycles-sb-card { background: #2A2A2A; color: var(--text); border: 1px solid var(--border); }
+  .cycles-sb-card .income-card-label { font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .cycles-sb-card .income-card-val { font-size: 22px; font-weight: 700; }
+
+  @media (max-width: 860px) {
+    .cycles-form-grid { grid-template-columns: 1fr 1fr; }
+    .cycles-form-row2 { grid-template-columns: 1fr 1fr; }
+    .cycles-table { font-size: 12px; }
+  }
+
   @media (max-width: 860px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { position: static; height: auto; }
@@ -255,6 +323,9 @@
       </button>
       <button class="nav-tab" id="nav-income" onclick="setView('income')">
         <span class="nav-tab-icon">$</span> Ingresos
+      </button>
+      <button class="nav-tab" id="nav-cycles" onclick="setView('cycles')">
+        <span class="nav-tab-icon">🖥</span> Cycles
       </button>
     </div>
 
@@ -292,6 +363,28 @@
         <div class="income-stat">
           <span>Registros</span>
           <strong id="total-entries" style="color:var(--text)">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR: Cycles stats -->
+    <div id="sb-cycles" style="display:none;">
+      <div class="cycles-sb">
+        <div class="cycles-sb-card">
+          <div class="income-card-label">Ganancia Total</div>
+          <div class="income-card-val" id="cyc-total-profit">S/ 0.00</div>
+        </div>
+        <div class="income-stat">
+          <span>En stock</span>
+          <strong id="cyc-stock-count" style="color:var(--cycles-stock)">0</strong>
+        </div>
+        <div class="income-stat">
+          <span>Vendidos</span>
+          <strong id="cyc-sold-count" style="color:var(--cycles-sold)">0</strong>
+        </div>
+        <div class="income-stat">
+          <span>Inversión activa</span>
+          <strong id="cyc-invest" style="color:var(--text); font-size:13px">S/ 0.00</strong>
         </div>
       </div>
     </div>
@@ -356,6 +449,84 @@
       </div>
     </div>
 
+    <!-- VIEW: CYCLES -->
+    <div class="view" id="view-cycles">
+
+      <!-- Summary cards -->
+      <div class="cycles-summary">
+        <div class="cycles-summary-card highlight">
+          <div class="cs-label">Ganancia Total</div>
+          <div class="cs-val" id="cyc-s-profit">S/ 0.00</div>
+        </div>
+        <div class="cycles-summary-card">
+          <div class="cs-label">Inversión activa (USD)</div>
+          <div class="cs-val" id="cyc-s-invest">$0.00</div>
+        </div>
+        <div class="cycles-summary-card">
+          <div class="cs-label">En stock</div>
+          <div class="cs-val" id="cyc-s-stock">0</div>
+        </div>
+        <div class="cycles-summary-card">
+          <div class="cs-label">Vendidos</div>
+          <div class="cs-val" id="cyc-s-sold">0</div>
+        </div>
+      </div>
+
+      <!-- Add form -->
+      <div class="add-box" style="margin-bottom:1.75rem;">
+        <div class="cycles-header" style="margin-bottom:1rem;">
+          <span style="font-size:13px;font-weight:600;color:var(--text);">Registrar equipo</span>
+          <div class="cycles-tc-row">
+            <span class="cycles-tc-label">Tipo de cambio:</span>
+            <span class="cycles-tc-label">$1 =</span>
+            <input type="number" id="cyc-tc" class="cycles-tc-input" value="3.70" step="0.01" min="1" oninput="renderCycles()" />
+            <span class="cycles-tc-label">PEN</span>
+          </div>
+        </div>
+        <div class="cycles-form-grid">
+          <input type="text"   id="cyc-modelo"   class="add-input" placeholder="Modelo (ej. MBP 2016 13&quot; 8GB/256)" />
+          <input type="number" id="cyc-costo"    class="add-input" placeholder="Costo $" step="0.01" />
+          <input type="number" id="cyc-envio"    class="add-input" placeholder="Envío $" step="0.01" />
+          <input type="number" id="cyc-cargador" class="add-input" placeholder="Cargador $" step="0.01" />
+          <input type="number" id="cyc-bateria"  class="add-input" placeholder="Batería $" step="0.01" />
+        </div>
+        <div class="cycles-form-row2">
+          <input type="number" id="cyc-venta-fria"     class="add-input" placeholder="Precio venta fría S/" step="1" />
+          <input type="number" id="cyc-venta-caliente" class="add-input" placeholder="Precio venta caliente S/" step="1" />
+          <select id="cyc-status" class="status-sel">
+            <option value="stock">📦 En stock</option>
+            <option value="transito">🚚 En tránsito</option>
+            <option value="vendido">✅ Vendido</option>
+          </select>
+          <button class="add-btn" onclick="addCycle()">+ Agregar</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="cycles-table-wrap">
+        <table class="cycles-table">
+          <thead>
+            <tr>
+              <th>Modelo</th>
+              <th class="right">Costo</th>
+              <th class="right">Envío</th>
+              <th class="right">Cargador</th>
+              <th class="right">Batería</th>
+              <th class="right">Total USD</th>
+              <th class="right">Total S/</th>
+              <th class="right">Venta Fría</th>
+              <th class="right">Venta Cal.</th>
+              <th class="right">Ganancia</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="cycles-tbody"></tbody>
+        </table>
+        <div id="cycles-empty" class="empty-state" style="display:none;"><span>🖥️</span>Sin equipos registrados</div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -370,6 +541,7 @@
   // ── ESTADO ───────────────────────────────────
   let tasks        = [];
   let entries      = [];
+  let cycles       = [];
   let currentEnv   = localStorage.getItem('agenda_env') || 'nsx';
   let activeFilter = 'todas';
   let currentView  = 'tasks';
@@ -401,16 +573,20 @@
       const rec = data.record;
       tasks   = rec.tasks   || [];
       entries = rec.entries || [];
+      cycles  = rec.cycles  || [];
       localStorage.setItem(TASKS_KEY,  JSON.stringify(tasks));
       localStorage.setItem(INCOME_KEY, JSON.stringify(entries));
+      localStorage.setItem('cycles_v1', JSON.stringify(cycles));
       setSyncStatus('ok', 'Sincronizado ✓');
     } catch(e) {
       tasks   = JSON.parse(localStorage.getItem(TASKS_KEY)  || '[]');
       entries = JSON.parse(localStorage.getItem(INCOME_KEY) || '[]');
+      cycles  = JSON.parse(localStorage.getItem('cycles_v1') || '[]');
       setSyncStatus('error', 'Sin conexión — local');
     }
     renderTasks();
     renderIncome();
+    renderCycles();
   }
 
   async function saveToCloud() {
@@ -418,12 +594,13 @@
     saving = true;
     localStorage.setItem(TASKS_KEY,  JSON.stringify(tasks));
     localStorage.setItem(INCOME_KEY, JSON.stringify(entries));
+    localStorage.setItem('cycles_v1', JSON.stringify(cycles));
     setSyncStatus('syncing', 'Guardando...');
     try {
       const resp = await fetch(BIN_URL, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-Master-Key": MASTER_KEY },
-        body: JSON.stringify({ tasks, entries })
+        body: JSON.stringify({ tasks, entries, cycles })
       });
       if (!resp.ok) throw new Error("HTTP " + resp.status);
       setSyncStatus('ok', 'Guardado ✓');
@@ -438,10 +615,13 @@
     currentView = view;
     document.getElementById('view-tasks').classList.toggle('active', view === 'tasks');
     document.getElementById('view-income').classList.toggle('active', view === 'income');
+    document.getElementById('view-cycles').classList.toggle('active', view === 'cycles');
     document.getElementById('nav-tasks').classList.toggle('active', view === 'tasks');
     document.getElementById('nav-income').classList.toggle('active', view === 'income');
+    document.getElementById('nav-cycles').classList.toggle('active', view === 'cycles');
     document.getElementById('sb-tasks').style.display  = view === 'tasks'  ? '' : 'none';
     document.getElementById('sb-income').style.display = view === 'income' ? '' : 'none';
+    document.getElementById('sb-cycles').style.display = view === 'cycles' ? '' : 'none';
   }
 
   // ── VISTA ingresos (list / monthly) ──────────
@@ -770,7 +950,141 @@
     }
   }
 
-  // ── INIT ─────────────────────────────────────
+  // ── CYCLES CRUD ──────────────────────────────
+  function getTc() {
+    return parseFloat(document.getElementById('cyc-tc').value) || 3.70;
+  }
+
+  function addCycle() {
+    const modelo = document.getElementById('cyc-modelo').value.trim();
+    const costo  = parseFloat(document.getElementById('cyc-costo').value)    || 0;
+    if (!modelo || !costo) return;
+    cycles.push({
+      id:           Date.now() + Math.floor(Math.random()*1000),
+      modelo,
+      costo,
+      envio:        parseFloat(document.getElementById('cyc-envio').value)    || 0,
+      cargador:     parseFloat(document.getElementById('cyc-cargador').value) || 0,
+      bateria:      parseFloat(document.getElementById('cyc-bateria').value)  || 0,
+      ventaFria:    parseFloat(document.getElementById('cyc-venta-fria').value)     || 0,
+      ventaCaliente:parseFloat(document.getElementById('cyc-venta-caliente').value) || 0,
+      status:       document.getElementById('cyc-status').value,
+      created:      new Date().toISOString()
+    });
+    ['cyc-modelo','cyc-costo','cyc-envio','cyc-cargador','cyc-bateria','cyc-venta-fria','cyc-venta-caliente'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    renderCycles();
+    saveToCloud();
+  }
+
+  function deleteCycle(id) {
+    if (!confirm('¿Eliminar este equipo?')) return;
+    cycles = cycles.filter(c => c.id !== id);
+    renderCycles();
+    saveToCloud();
+  }
+
+  function cycleCycleStatus(id) {
+    const c = cycles.find(c => c.id === id);
+    if (!c) return;
+    const order = ['stock','transito','vendido'];
+    const idx = order.indexOf(c.status);
+    c.status = order[(idx + 1) % order.length];
+    renderCycles();
+    saveToCloud();
+  }
+
+  function startEditCycleField(id, field, tdEl) {
+    const c = cycles.find(c => c.id === id);
+    if (!c) return;
+    const input = document.createElement('input');
+    input.className = 'cycles-inline-input';
+    input.type = (field === 'modelo') ? 'text' : 'number';
+    input.value = c[field];
+    if (field !== 'modelo') { input.step = '0.01'; input.style.textAlign = 'right'; }
+    tdEl.innerHTML = '';
+    tdEl.appendChild(input);
+    input.focus();
+    input.select();
+    function commit() {
+      let val = input.value.trim();
+      if (!val) { renderCycles(); return; }
+      if (field !== 'modelo') { val = parseFloat(val); if (isNaN(val)) { renderCycles(); return; } }
+      c[field] = val;
+      renderCycles();
+      saveToCloud();
+    }
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') input.blur();
+      if (ev.key === 'Escape') { input.removeEventListener('blur', commit); renderCycles(); }
+    });
+  }
+
+  function renderCycles() {
+    const tc = getTc();
+    const tbody = document.getElementById('cycles-tbody');
+    const empty = document.getElementById('cycles-empty');
+    tbody.innerHTML = '';
+
+    let totalProfit = 0, totalInvestUsd = 0, stockCount = 0, soldCount = 0;
+
+    cycles.forEach(c => {
+      const totalUsd   = c.costo + c.envio + c.cargador + c.bateria;
+      const totalSoles = totalUsd * tc;
+      const ganancia   = (c.ventaCaliente || c.ventaFria || 0) - totalSoles;
+      const isNeg      = ganancia < 0;
+
+      if (c.status !== 'vendido') totalInvestUsd += totalUsd;
+      if (c.status === 'stock' || c.status === 'transito') stockCount++;
+      if (c.status === 'vendido') { soldCount++; totalProfit += ganancia; }
+
+      const statusLabels = { stock:'📦 Stock', transito:'🚚 Tránsito', vendido:'✅ Vendido' };
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="td-model" title="Doble clic para editar">${esc(c.modelo)}</td>
+        <td class="td-usd" title="Doble clic para editar">$${c.costo.toFixed(2)}</td>
+        <td class="td-usd" title="Doble clic para editar">$${c.envio.toFixed(2)}</td>
+        <td class="td-usd" title="Doble clic para editar">$${c.cargador.toFixed(2)}</td>
+        <td class="td-usd" title="Doble clic para editar">$${c.bateria.toFixed(2)}</td>
+        <td class="td-usd" style="font-weight:600;color:var(--text)">$${totalUsd.toFixed(2)}</td>
+        <td class="td-soles">S/ ${totalSoles.toLocaleString('es-PE',{minimumFractionDigits:2})}</td>
+        <td class="td-soles" title="Doble clic para editar">${c.ventaFria ? 'S/ '+c.ventaFria.toLocaleString('es-PE',{minimumFractionDigits:2}) : '—'}</td>
+        <td class="td-soles" title="Doble clic para editar">${c.ventaCaliente ? 'S/ '+c.ventaCaliente.toLocaleString('es-PE',{minimumFractionDigits:2}) : '—'}</td>
+        <td class="td-profit${isNeg?' neg':''}">S/ ${ganancia.toLocaleString('es-PE',{minimumFractionDigits:2})}</td>
+        <td><span class="cycle-status ${c.status}" title="Clic para cambiar estado">${statusLabels[c.status]}</span></td>
+        <td class="td-actions"><button class="cycles-del" onclick="deleteCycle(${c.id})">&times;</button></td>
+      `;
+      // Double-click edits
+      const fields = ['modelo','costo','envio','cargador','bateria','ventaFria','ventaCaliente'];
+      const tds = tr.querySelectorAll('td');
+      [0,1,2,3,4,7,8].forEach((tdIdx, i) => {
+        tds[tdIdx].addEventListener('dblclick', function() {
+          startEditCycleField(c.id, fields[i], this);
+        });
+      });
+      tds[10].querySelector('.cycle-status').addEventListener('click', () => cycleCycleStatus(c.id));
+      tbody.appendChild(tr);
+    });
+
+    empty.style.display = cycles.length ? 'none' : 'block';
+
+    // Update summary cards
+    const fmt = v => `S/ ${v.toLocaleString('es-PE',{minimumFractionDigits:2})}`;
+    document.getElementById('cyc-s-profit').textContent  = fmt(totalProfit);
+    document.getElementById('cyc-s-invest').textContent  = `$${totalInvestUsd.toFixed(2)}`;
+    document.getElementById('cyc-s-stock').textContent   = stockCount;
+    document.getElementById('cyc-s-sold').textContent    = soldCount;
+    // Sidebar
+    document.getElementById('cyc-total-profit').textContent = fmt(totalProfit);
+    document.getElementById('cyc-stock-count').textContent  = stockCount;
+    document.getElementById('cyc-sold-count').textContent   = soldCount;
+    document.getElementById('cyc-invest').textContent       = fmt(totalInvestUsd * tc);
+  }
+
+
   document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
   document.getElementById('task-input').addEventListener('keydown', e => { if (e.key==='Enter') addTask(); });
   document.getElementById('in-date').valueAsDate = new Date();
