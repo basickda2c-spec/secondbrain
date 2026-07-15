@@ -184,9 +184,16 @@
   .task-item.done { opacity: 0.4; background: var(--done-bg); }
   .check-btn { width: 21px; height: 21px; border-radius: 50%; border: 2px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, border-color 0.2s; }
   .check-btn.checked { background: var(--check-color); border-color: var(--check-color); }
-  .task-name { flex: 1; font-size: 14px; line-height: 1.4; color: var(--text); cursor: text; }
+  .task-main { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .task-name { font-size: 14px; line-height: 1.4; color: var(--text); cursor: text; }
   .task-item.done .task-name { text-decoration: line-through; color: var(--muted); }
   .task-name-input { flex: 1; font-size: 14px; line-height: 1.4; color: var(--text); background: var(--bg); border: 1px solid var(--accent); border-radius: 7px; padding: 3px 8px; font-family: inherit; outline: none; }
+  .task-desc { font-size: 12px; line-height: 1.4; color: var(--muted); cursor: text; white-space: pre-wrap; }
+  .task-item.done .task-desc { text-decoration: line-through; }
+  .task-desc-add { font-size: 12px; color: var(--accent); cursor: pointer; opacity: 0; transition: opacity 0.15s; width: fit-content; }
+  .task-item:hover .task-desc-add { opacity: 0.7; }
+  .task-desc-add:hover { opacity: 1 !important; }
+  .task-desc-input { font-size: 12px; line-height: 1.4; color: var(--text); background: var(--bg); border: 1px solid var(--accent); border-radius: 7px; padding: 4px 8px; font-family: inherit; outline: none; resize: vertical; width: 100%; }
   .inline-priority { border: none; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; outline: none; }
   .inline-priority.p-alta  { color: var(--alta);  background: var(--alta-bg); }
   .inline-priority.p-media { color: var(--media); background: var(--media-bg); }
@@ -476,6 +483,7 @@
           </select>
           <button class="add-btn" onclick="addTask()">+ Agregar</button>
         </div>
+        <textarea id="task-desc-input" class="task-desc-input" placeholder="Descripción (opcional)..." rows="1" style="margin-top:8px;"></textarea>
       </div>
       <div id="tasks-container"></div>
     </div>
@@ -719,11 +727,13 @@
 
   // ── TASKS CRUD ───────────────────────────────
   function addTask() {
-    const input = document.getElementById('task-input');
-    const name  = input.value.trim();
+    const input   = document.getElementById('task-input');
+    const descEl  = document.getElementById('task-desc-input');
+    const name    = input.value.trim();
     if (!name) return;
-    tasks.push({ id: Date.now() + Math.floor(Math.random()*1000), name, priority: document.getElementById('priority-sel').value, done: false, env: currentEnv, created: new Date().toISOString() });
+    tasks.unshift({ id: Date.now() + Math.floor(Math.random()*1000), name, desc: descEl.value.trim(), priority: document.getElementById('priority-sel').value, done: false, env: currentEnv, created: new Date().toISOString() });
     input.value = '';
+    descEl.value = '';
     renderTasks();
     saveToCloud();
   }
@@ -741,7 +751,7 @@
 
   function updatePriority(id, val) {
     const t = tasks.find(t => t.id == id);
-    if (t) { t.priority = val; saveToCloud(); }
+    if (t) { t.priority = val; renderTasks(); saveToCloud(); }
   }
 
   // Inline edit task name — double click
@@ -763,6 +773,28 @@
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') { input.blur(); }
       if (e.key === 'Escape') { input.removeEventListener('blur', commit); renderTasks(); }
+    });
+  }
+
+  // Inline edit task description — double click (or click "+ agregar descripción")
+  function startEditDesc(id, el) {
+    const t = tasks.find(t => t.id == id);
+    if (!t || t.done) return;
+    const textarea = document.createElement('textarea');
+    textarea.className = 'task-desc-input';
+    textarea.rows = 2;
+    textarea.value = t.desc || '';
+    textarea.placeholder = 'Descripción...';
+    el.replaceWith(textarea);
+    textarea.focus();
+    function commit() {
+      const val = textarea.value.trim();
+      if (val !== (t.desc || '')) { t.desc = val; saveToCloud(); }
+      renderTasks();
+    }
+    textarea.addEventListener('blur', commit);
+    textarea.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { textarea.removeEventListener('blur', commit); renderTasks(); }
     });
   }
 
@@ -897,7 +929,12 @@
           <button class="check-btn${t.done?' checked':''}" onclick="toggle(${t.id})">
             ${t.done?`<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
           </button>
-          <span class="task-name" title="Doble clic para editar">${esc(t.name)}</span>
+          <div class="task-main">
+            <span class="task-name" title="Doble clic para editar">${esc(t.name)}</span>
+            ${t.desc
+              ? `<span class="task-desc" title="Doble clic para editar">${esc(t.desc)}</span>`
+              : (t.done ? '' : `<span class="task-desc-add">+ agregar descripción</span>`)}
+          </div>
           <select class="inline-priority p-${t.priority}" onchange="updatePriority(${t.id},this.value)">
             <option value="alta"  ${t.priority==='alta' ?'selected':''}>Alta</option>
             <option value="media" ${t.priority==='media'?'selected':''}>Media</option>
@@ -909,6 +946,12 @@
         item.querySelector('.task-name').addEventListener('dblclick', function() {
           startEditTask(t.id, this);
         });
+        // Description: double-click to edit existing, click to add new
+        const descEl = item.querySelector('.task-desc, .task-desc-add');
+        if (descEl) {
+          const trigger = descEl.classList.contains('task-desc-add') ? 'click' : 'dblclick';
+          descEl.addEventListener(trigger, function() { startEditDesc(t.id, this); });
+        }
         // Drag & drop
         bindTaskDrag(item);
         container.appendChild(item);
